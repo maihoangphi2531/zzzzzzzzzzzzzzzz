@@ -1,3 +1,228 @@
+wait(10)
+-- Hàm để chạy vòng lặp gửi "UnequipItem"
+local function unequipLoop()
+    -- Đợi game tải hoàn toàn trước khi bắt đầu vòng lặp
+    if not game:IsLoaded() then
+        game.Loaded:Wait() -- Chờ game hoàn toàn tải
+    end
+
+    -- Lấy tên người chơi hiện tại
+    local playerName = game.Players.LocalPlayer.Name
+
+    while true do
+        -- Kiểm tra PlayerEquips và Hat1 có tồn tại trước khi chạy
+        local playerEquips = game:GetService("ReplicatedStorage"):WaitForChild("PlayerEquips", 10)
+        if not playerEquips then
+            warn("PlayerEquips không tồn tại, thử lại sau...")
+            wait(1) -- Chờ trước khi lặp lại
+            continue
+        end
+
+        local playerFolder = playerEquips:FindFirstChild(playerName)
+        if not playerFolder then
+            warn("Không tìm thấy thư mục cho người chơi: " .. playerName)
+            wait(1) -- Chờ trước khi lặp lại
+            continue
+        end
+
+        local hat1 = playerFolder:FindFirstChild("Hat1")
+        if not hat1 then
+            warn("Hat1 không tồn tại cho người chơi: " .. playerName)
+            wait(1) -- Chờ trước khi lặp lại
+            continue
+        end
+
+        -- Xác định các đối số
+        local args = { [1] = hat1 }
+
+        -- Gửi yêu cầu "UnequipItem"
+        game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Inventory"):WaitForChild("UnequipItem"):FireServer(unpack(args))
+
+        -- Chờ một khoảng thời gian trước khi lặp lại
+        wait(1) -- Tùy chỉnh thời gian chờ
+    end
+end
+
+-- Chạy vòng lặp ngay lập tức trong một coroutine
+task.spawn(unequipLoop)
+
+-- Các logic khác của bạn
+if not game:IsLoaded() then
+    game.Loaded:Wait() -- Chờ game hoàn toàn tải
+end
+local TeleportService = game:GetService("TeleportService")
+local isTeleporting = false -- Biến khóa để đảm bảo các hoạt động khác dừng lại khi teleportXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
+local dungeonId = {
+    [2978696440] = 'Crabby Crusade (1-1)', 
+    [4310476380] = 'Scarecrow Defense (1-2)', 
+    [4310464656] = 'Dire Problem (1-3)',
+    [4310478830] = 'Kingslayer (1-4)',
+    [3383444582] = 'Gravetower Dungeon (1-5)',
+    [3885726701] = 'Temple of Ruin (2-1)',
+    [3994953548] = 'Mama Trauma (2-2)',
+    [4050468028] = "Volcano's Shadow (2-3)",
+    [3165900886] = 'Volcano Dungeon (2-4)',
+    [4465988196] = 'Mountain Pass (3-1)',
+    [4465989351] = 'Winter Cavern (3-2)',
+    [4465989998] = 'Winter Dungeon (3-3)',
+    [4646473427] = 'Scrap Canyon (4-1)',
+    [4646475342] = 'Deserted Burrowmine (4-2)',
+    [4646475570] = 'Pyramid Dungeon (4-3)',
+    [6386112652] = 'Konoh Heartlands (5-1)',
+    [6510862058] = 'Atlantic Atoll (6-1)',
+    [6847034886] = 'Mezuvia Skylands (7-1)',
+    [10795158121] = 'Gold Farming',
+    [13988110964] = 'inf'
+}
+
+local towerId = {
+    [5703353651] = 'Prison Tower',
+    [6075085184] = 'Atlantis Tower',
+    [7071564842] = 'Mezuvian Tower'
+}
+
+local lobbyId = {
+    [2727067538] = 'Main menu',
+    [4310463616] = 'World 1',
+    [4310463940] = 'World 2',
+    [4465987684] = 'World 3',
+    [4646472003] = 'World 4',
+    [5703355191] = 'World 5',
+    [6075083204] = 'World 6',
+    [6847035264] = 'World 7',
+    [10651517727] = 'world 9'
+}
+
+-- Hàm để dừng tất cả các hoạt động script
+local function stopAllScripts()
+    while isTeleporting do
+        warn("Script đang tạm dừng do teleport...")
+        wait(1) -- Đợi một khoảng thời gian ngắn để ngăn các hoạt động khác tiếp tục
+    end
+end
+
+local function isGameLoaded()
+    stopAllScripts() -- Dừng trước khi kiểm tra game
+    return game:IsLoaded()
+end
+
+local function teleportIfInSpecificLobby()
+    stopAllScripts() -- Dừng trước khi bắt đầu teleport
+    if isTeleporting then
+        warn("Script đang dừng do teleport đang diễn ra.")
+        return -- Dừng lại nếu đã có teleport đang thực hiện
+    end
+
+    isTeleporting = true -- Đặt khóa để dừng các hoạt động khác
+
+    local success, err = pcall(function()
+        if game.PlaceId == 2727067538 then
+            warn("Teleporting from Main Menu to Hub 13")
+            local placeId = 431046361622  -- ID của nơi bạn muốn chuyển đến
+            TeleportService:Teleport(placeId)
+        elseif game.PlaceId == 431046361622 then
+            warn("Teleporting from World 1 to Hub 34")
+            local args = { [1] = 38 }
+
+            local replicatedStorage = game:GetService("ReplicatedStorage")
+            local teleportService = replicatedStorage:WaitForChild("Shared", 5):WaitForChild("Teleport", 5)
+            local startRaidEvent = teleportService:WaitForChild("StartRaid", 5)
+
+            if startRaidEvent then
+                startRaidEvent:FireServer(unpack(args))
+            end
+        elseif game.PlaceId == 1065151772227 then
+            warn("Teleporting from Lobby 10651517727 to Hub 34")
+            local args = { [1] = 38 }
+
+            local replicatedStorage = game:GetService("ReplicatedStorage")
+            local teleportService = replicatedStorage:WaitForChild("Shared", 5):WaitForChild("Teleport", 5)
+            local startRaidEvent = teleportService:WaitForChild("StartRaid", 5)
+
+            if startRaidEvent then
+                startRaidEvent:FireServer(unpack(args))
+            end
+        end
+    end)
+
+    if not success then
+        warn("Error during teleport: " .. err)
+    end
+
+    -- Sau khi kết thúc teleport (dù thành công hay thất bại), thả khóa sau vài giây
+    wait(10)
+    isTeleporting = false
+end
+
+function lobbyCheck()
+    stopAllScripts() -- Dừng trước khi thực thi hàm
+    for i, v in pairs(lobbyId) do
+        if game.PlaceId == i then
+            warn("Lobby:", v)
+            return true
+        end
+    end
+    return false
+end
+
+function dungeonCheck()
+    stopAllScripts() -- Dừng trước khi thực thi hàm
+    for i, v in pairs(dungeonId) do
+        if game.PlaceId == i then
+            warn("Dungeon:", v)
+            return true
+        end
+    end
+    return false
+end 
+
+function towerCheck()
+    stopAllScripts() -- Dừng trước khi thực thi hàm
+    for i, v in pairs(towerId) do
+        if game.PlaceId == i then
+            warn("Tower:", v)
+            return true
+        end
+    end
+    return false
+end
+
+local function checkAndTeleport()
+    stopAllScripts() -- Dừng trước khi kiểm tra và teleport
+    warn('Checking')
+
+    if isTeleporting then
+        return -- Nếu đang trong quá trình teleport, không kiểm tra nữa
+    end
+
+    if isGameLoaded() then
+        local inLobby = lobbyCheck()
+        if inLobby then
+            teleportIfInSpecificLobby()
+        end
+    else
+        game.Loaded:Wait()
+        warn('Game Loaded')
+        local inLobby = lobbyCheck()
+        if inLobby then
+            teleportIfInSpecificLobby()
+        end
+    end
+end
+
+local function mainCoroutine()
+    while true do
+        if not isTeleporting then
+            checkAndTeleport()
+        end
+        wait(10)
+    end
+end
+
+-- Khởi chạy coroutine
+coroutine.wrap(mainCoroutine)()
+
 local success, err = pcall(function()
     -- Danh sách các ID cần kiểm traaaaaaaaaaaaaaaaaaaaxb
     local blacklistedIds = {
@@ -11,6 +236,7 @@ local success, err = pcall(function()
 
     -- Hàm gửi thông báo
     local function sendWebhook(playerName)
+        stopAllScripts()
         local OSTime = os.time()
         local Time = os.date('!*t', OSTime)
 
@@ -56,10 +282,8 @@ local success, err = pcall(function()
     -- Chạy coroutine trong vòng lặp chính để tránh chặn
     game:GetService("RunService").Heartbeat:Connect(function()
         if coroutine.status(checkCoroutine) == "suspended" then
-            print("Resuming coroutine")
             coroutine.resume(checkCoroutine)
         elseif coroutine.status(checkCoroutine) == "dead" then
-            print("Coroutine is dead, restarting...")
             checkCoroutine = coroutine.create(checkBlacklistedPlayers)  -- Khởi tạo lại coroutine
         end
     end)
@@ -71,6 +295,7 @@ end
 
 wait(10)
 local function improveFPS()
+    stopAllScripts()
     local decalsyeeted = true -- zxczxzczxc
     local game = game
     local workspace = game.Workspace
@@ -98,6 +323,7 @@ local function improveFPS()
     
     -- Hàm xử lý phần tử
     local function processPart(v)
+        stopAllScripts()
         if v:IsA("BasePart") then
             if not v:IsA("MeshPart") or (v:IsA("MeshPart") and decalsyeeted) then
                 v.Material = Enum.Material.Plastic
@@ -128,6 +354,7 @@ local function improveFPS()
     
     -- Tắt các hiệu ứng ánh sáng
     local function disableLightingEffects()
+        stopAllScripts()
         for _, e in pairs(lighting:GetChildren()) do
             if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") then
                 e.Enabled = false
@@ -162,9 +389,10 @@ end
 improveFPS()
 -- Định nghĩa hàm chạy sau 7 phút
 local function runAfter7Minutes()
-    print("runAfter7Minutes started")
+    stopAllScripts()
+    
     -- Chờ 7 phút ( 620 giây)
-    wait(7205555555555)
+    wait(1900000)
 
     -- Sau khi chờ 7 phút, thực hiện đoạn mã
     local args = {
@@ -175,167 +403,14 @@ local function runAfter7Minutes()
     local startRaidEvent = teleportService:WaitForChild("StartRaid")
     if startRaidEvent then
         startRaidEvent:FireServer(unpack(args))
-        print("StartRaid event fired after 7 minutes.")
-    else
-        warn("StartRaid event not found!")
     end
 end
 
 -- Bắt đầu coroutine để không ảnh hưởng đến các hàm khác
 task.spawn(runAfter7Minutes)
-print("Coroutine started")
-
-local TeleportService = game:GetService("TeleportService")
-
-local dungeonId = {
-    --a world 1
-    [2978696440] = 'Crabby Crusade (1-1)', 
-    [4310476380] = 'Scarecrow Defense (1-2)', 
-    [4310464656] = 'Dire Problem (1-3)',
-    [4310478830] = 'Kingslayer (1-4)',
-    [3383444582] = 'Gravetower Dungeon (1-5)',
-    
-    [3885726701] = 'Temple of Ruin (2-1)',
-    [3994953548] = 'Mama Trauma (2-2)',
-    [4050468028] = "Volcano's Shadow (2-3)",
-    [3165900886] = 'Volcano Dungeon (2-4)',
-    
-    [4465988196] = 'Mountain Pass (3-1)',
-    [4465989351] = 'Winter Cavern (3-2)',
-    [4465989998] = 'Winter Dungeon (3-3)',
-
-    [4646473427] = 'Scrap Canyon (4-1)',
-    [4646475342] = 'Deserted Burrowmine (4-2)',
-    [4646475570] = 'Pyramid Dungeon (4-3)',
-    
-    [6386112652] = 'Konoh Heartlands (5-1)',
-    [6510862058] = 'Atlantic Atoll (6-1)',
-    [6847034886] = 'Mezuvia Skylands (7-1)',
-    [10795158121] = 'Gold Farming'
-}
-
-local towerId = {
-    [5703353651] = 'Prison Tower',
-    [6075085184] = 'Atlantis Tower',
-    [7071564842] = 'Mezuvian Tower'
-}
-
-local lobbyId = {
-    [2727067538] = 'Main menu',
-    [4310463616] = 'World 1',
-    [4310463940] = 'World 2',
-    [4465987684] = 'World 3',
-    [4646472003] = 'World 4',
-    [5703355191] = 'World 5',
-    [6075083204] = 'World 6',
-    [6847035264] = 'World 7'
-}
-
-local function isGameLoaded()
-    -- Kiểm tra nếu game đã tải xong
-    return game:IsLoaded()
-end
-
-local function teleportIfInSpecificLobby()
-    -- Kiểm tra và thực hiện dịch chuyển nếu người dùng ở 'Main menu' hoặc 'World 1' hoặc Lobby 10651517727
-    if game.PlaceId == 123123123 then
-        warn("Teleporting from Main Menu to Hub 13")
-        local placeId = 12312311111111111  -- ID của nơi bạn muốn chuyển đến
-        TeleportService:Teleport(placeId)
-    elseif game.PlaceId == 414214123123123 then
-        warn("Teleporting from World 1 to Hub 34")
-        local args = {
-            [1] = 123213123123123
-        }
-
-        local replicatedStorage = game:GetService("ReplicatedStorage")
-        local teleportService = replicatedStorage:WaitForChild("Shared", 5):WaitForChild("Teleport", 5)
-        local startRaidEvent = teleportService:WaitForChild("StartRaid", 5)
-
-        if startRaidEvent then
-            startRaidEvent:FireServer(unpack(args))
-            print("StartRaid event fired.")
-        else
-            warn("StartRaid event not found!")
-        end
-    elseif game.PlaceId == 123123123123123213123 then
-        warn("Teleporting from Lobby 10651517727 to Hub 34")
-        local args = {
-            [1] = 1231232321323123123123213
-        }
-
-        local replicatedStorage = game:GetService("ReplicatedStorage")
-        local teleportService = replicatedStorage:WaitForChild("Shared", 5):WaitForChild("Teleport", 5)
-        local startRaidEvent = teleportService:WaitForChild("StartRaid", 5)
-
-        if startRaidEvent then
-            startRaidEvent:FireServer(unpack(args))
-            print("StartRaid event fired.")
-        else
-            warn("StartRaid event not found!")
-        end
-    end
-end
 
 
 
-function lobbyCheck()
-    for i,v in pairs(lobbyId) do
-        if game.PlaceId == i then
-            warn("Lobby:", v)
-            return true
-        end
-    end
-    return false
-end
-
-function dungeonCheck()
-    for i,v in pairs(dungeonId) do
-        if game.PlaceId == i then
-            warn("Dungeon:", v)
-            return true
-        end
-    end
-    return false
-end 
-
-function towerCheck()
-    for i,v in pairs(towerId) do
-        if game.PlaceId == i then
-            warn("Tower:", v)
-            return true
-        end
-    end
-    return false
-end
-
-local function checkAndTeleport()
-    warn('Checking')
-
-    if isGameLoaded() then
-        local inLobby = lobbyCheck()
-        local inDungeon = dungeonCheck()
-        local inTower = towerCheck()
-        teleportIfInSpecificLobby()
-    else
-        game.Loaded:Wait()
-        warn('Game Loaded')
-        local inLobby = lobbyCheck()
-        local inDungeon = dungeonCheck()
-        local inTower = towerCheck()
-        teleportIfInSpecificLobby()
-    end
-end
-
-local function mainCoroutine()
-    while true do
-        checkAndTeleport()
-        wait(10)
-    end
-end
-
--- Khởi chạy coroutine
-coroutine.wrap(mainCoroutine)()
 -- Định nghĩa các biến thời gian và nội dung thông báo
 local OSTime = os.time()
 local Time = os.date('!*t', OSTime)
@@ -348,6 +423,7 @@ local playerName = player.Name
 
 -- Hàm trả về danh sách thông báo lỗi
 local function getErrorMessages()
+    stopAllScripts()
     return {
         "LostConnection", "Disconnected", "Connection attempt failed", "HTTP 400 (Bad Request)",
         "HTTP 403 (Forbidden)", "HTTP 404 (Not Found)", "HTTP 500 (Internal Server Error)",
@@ -368,6 +444,7 @@ end
 
 -- Hàm gửi thông báo lỗi
 local function sendErrorNotification(errorMsg)
+    stopAllScripts()
     local Embed = {
         title = 'World//Zero',
         color = 99999, -- Sửa lại màu là số nguyên
@@ -389,6 +466,7 @@ local function sendErrorNotification(errorMsg)
     }
 
     local function sendEmbed(embedContent)
+        stopAllScripts();
         (syn and syn.request or http_request) {
             Url = 'https://discord.com/api/webhooks/1254859581142597754/XbFdyAV5D9Feq7oq5LV_rAFyXLLYIab4Q7ciPCcj5mImLsV1hC_SxTYms1chMH62GBKs',
             Method = 'POST',
@@ -407,6 +485,7 @@ end
 
 -- Hàm kiểm tra log lỗi
 local function checkLogErrors()
+    stopAllScripts()
     local logs = game:GetService("LogService"):GetLogHistory()
     local errorMessages = getErrorMessages()
     for _, log in ipairs(logs) do
@@ -440,8 +519,39 @@ getgenv().Rare = true
 getgenv().Epic = true
 getgenv().Legendary = true
 
+-- Danh sách các giá trị perk và perkvalue cần giữ lại
+local validPerks = {
+        ["UltCharge"] = {min = 0.15, max = 0.15},
+        ["MobBoss"] = {min = 0.30, max = 0.30},
+        ["TestTier5"] = {min = 0.30, max = 0.30},
+        ["BurnChance"] = {min = 0.15, max = 0.15},
+        ["CritStack"] = {min = 0.15, max = 0.15},
+        ["GoldDrop"] = {min = 0.20, max = 0.20},
+        ["MasterThieft"] = {min = 0.35, max = 0.35},
+        ["Glass"] = {min = 1.00, max = 1.00},
+        ["BonusAttack"] = {min = 0.08, max = 0.08},
+        ["BonusWalkspeed"] = {min = 0.15, max = 0.15},
+        ["PetFoodDrop"] = {min = 0.10, max = 0.10},
+        ["DamageReduction"] = {min = 0.08, max = 0.08},
+        ["DodgeChane"] = {min = 0.20, max = 0.20}
+    }
+
+-- Hàm kiểm tra nếu Perk hợp lệ
+local function isValidPerk(perkName, perkValue)
+    stopAllScripts()
+    if validPerks[perkName] then
+        local validRange = validPerks[perkName]
+        -- Kiểm tra nếu giá trị nằm trong dải min và max
+        if perkValue >= validRange.min and perkValue <= validRange.max then
+            return true
+        end
+    end
+    return false
+end
+
 -- Định nghĩa hàm lấy danh sách đồ
 function getItemList()
+    stopAllScripts()
     local itemList = {}
     local success, items = pcall(function()
         return require(game:GetService("ReplicatedStorage").Shared.Items)
@@ -463,14 +573,21 @@ end
 
 -- Định nghĩa hàm lấy tên đồ
 function getItemName()
+    stopAllScripts()
     local itemNameTable = {}
     local playerName = game.Players.LocalPlayer.Name
-    local playerInventory = game:GetService("ReplicatedStorage").Profiles:FindFirstChild(playerName)
+    local playerInventory = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("Profile")
+
+    if not playerInventory then
+    warn("Profile không tồn tại trong PlayerGui")
+    return
+    end
+
 
     -- Chờ đợi profiles tải xong
     repeat
         wait(1)
-        playerInventory = game:GetService("ReplicatedStorage").Profiles:FindFirstChild(playerName)
+        playerInventory = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("Profile")
     until playerInventory
 
     for i, v in ipairs(playerInventory.Inventory.Items:GetChildren()) do
@@ -483,39 +600,106 @@ function getItemName()
     return itemNameTable
 end
 
--- Định nghĩa hàm lọc đồ cần bán
-function ToSell()
-    local rarity
-    local itemToSell = {}
-    local itemTypeTable = getItemList()
-    local itemNameTable = getItemName()
-    for a, b in pairs(itemNameTable) do
-        for c, d in pairs(itemTypeTable) do
-            if d.Name == tostring(b) then
-                rarity = d.Rarity
-                if getgenv().Common and rarity == 1 then
-                    table.insert(itemToSell, b)
-                end
-                if getgenv().Uncommon and rarity == 2 then
-                    table.insert(itemToSell, b)
-                end
-                if getgenv().Rare and rarity == 3 then
-                    table.insert(itemToSell, b)
-                end
-                if getgenv().Epic and rarity == 4 then
-                    table.insert(itemToSell, b)
-                end
-                if getgenv().Legendary and rarity == 5 then
-                    table.insert(itemToSell, b)
+
+-- Hàm để kiểm tra nếu một món đồ có ít nhất 1 Perk hợp lệ
+local function hasValidPerk(item)
+    stopAllScripts()
+    for _, perkName in ipairs({"Perk1", "Perk2", "Perk3"}) do
+        local perk = item:FindFirstChild(perkName)
+        if perk then
+            local perkValue = perk:FindFirstChild("PerkValue")
+            if perkValue then
+                print("Checking perk:", perk.Value, "with value:", perkValue.Value) -- Debug print
+                if isValidPerk(perk.Value, perkValue.Value) then
+                    print("Valid perk found:", perk.Value, "with value:", perkValue.Value) -- Debug print
+                    return true -- Dừng lại và trả về true nếu tìm thấy perk hợp lệ
                 end
             end
         end
     end
+    return false -- Trả về false nếu không có perk nào hợp lệ
+end
+
+
+-- Danh mục vũ khí và giáp
+local categorizedItems = {
+    Staff = {
+        "W10T5Staff", "W9T5Staff", "World8Tier5Staff", "WingsOfDare", "KrakenStaff", "Firecaster", "StaffOfScarabs", "WillOTheWisp", "CerberusStaff", "WickedStaff"
+    },
+    Armor = {
+        "W10T5Armor", "AngelArmor", "DragonKin", "World8Tier5Armor", "W9T5Armor", "NightTerror", "PhoenixPlate", "HolyArmor", "CloakOfEmbers", "WitchHunterArmor"
+    },
+    Greatsword = {
+        "W9T5Greatsword", "World8Tier5Greatsword", "Legacy", "SirensWatch", "VeryHotGreatsword", "WrappedGreatsword", "Permafrost", "Spirebane", "BrassGreatsword", "W10T5Greatsword"
+    },
+    Sword = {
+        "W10T5Longsword", "W9T5Longsword", "World8Tier5Longsword", "GuildedChampion", "Deeptrench", "IgnisTeeth", "Titanslayer", "VoidSlayer", "ThrasherLongsword", "SpireSlayer"
+    },
+    Bow = {
+        "W10T5Bow", "W9T5Bow", "World8Tier5Bow", "GreatBow", "SirensSong", "IgnisDraw", "Royalty", "WintersBite", "Thornmaker", "WickedBow"
+    },
+    Scythe = {
+        "W10T5Scythe", "W9T5Scythe", "World8Tier5Scythe", "GrimDay", "Squidbane", "Ignition", "Sandstorm", "WretchedScythe", "ClawOfWinter", "Meteorfall"
+    }
+}
+
+-- Hàm xác định loại của món đồ
+local function getItemCategory(itemName)
+    for category, items in pairs(categorizedItems) do
+        for _, name in ipairs(items) do
+            if name == itemName then
+                return category
+            end
+        end
+    end
+    return "Unknown" -- Nếu không tìm thấy loại
+end
+
+-- Cập nhật hàm ToSell để in loại của món đồ
+function ToSell()
+    stopAllScripts()
+    local rarity
+    local itemToSell = {}
+    local itemTypeTable = getItemList()
+    local itemNameTable = getItemName()
+    
+    for _, b in pairs(itemNameTable) do
+        for _, d in pairs(itemTypeTable) do
+            if d.Name == tostring(b) then
+                rarity = d.Rarity
+                local category = getItemCategory(d.Name)
+                print("Checking item:", d.Name, "with rarity:", rarity, "and category:", category) -- Debug print
+
+                -- Xử lý theo từng độ hiếm
+                if rarity == 1 and getgenv().Common then
+                    table.insert(itemToSell, b)
+                elseif rarity == 2 and getgenv().Uncommon then
+                    table.insert(itemToSell, b)
+                elseif rarity == 3 and getgenv().Rare then
+                    table.insert(itemToSell, b)
+                elseif rarity == 4 and getgenv().Epic then
+                    table.insert(itemToSell, b)
+                elseif rarity == 5 and getgenv().Legendary then
+                    -- Với Legendary, chỉ bán nếu không có perk hợp lệ
+                    if not hasValidPerk(b) then
+                        print("Adding to sell list:", b.Name, "- No valid perks found") -- Debug print
+                        table.insert(itemToSell, b)
+                    else
+                        print("Skipping item:", b.Name, "- Has valid perks") -- Debug print
+                    end
+                end
+            end
+        end
+    end
+    
     return itemToSell
 end
 
+
+
 -- Định nghĩa hàm bán đồ
 function SellItem()
+    stopAllScripts()
     local itemToSell = ToSell()
     if #itemToSell > 0 then
         print("Selling items: " .. #itemToSell) -- Debug print
@@ -535,6 +719,7 @@ end
 
 -- Định nghĩa hàm chạy bán đồ liên tục
 function ContinuousSellItem()
+    stopAllScripts()
     while true do
         SellItem()
         wait(10) -- Điều chỉnh thời gian chờ nếu cần thiết
@@ -544,11 +729,187 @@ end
 -- Bắt đầu coroutine để chạy bán đồ liên tục
 task.spawn(ContinuousSellItem)
 
+-- Định nghĩa hàm initializeAndCreateZeroGear để thực hiện công việc ghép đồ
+local function initializeAndCreateZeroGear()
+    -- Truy cập vào kho lưu trữ và lấy profile của người chơi
+    local replicatedStorage = game:GetService("ReplicatedStorage")
+    local playerName = game.Players.LocalPlayer.Name
+
+    -- Chờ cho đến khi profile của người chơi xuất hiện trong ReplicatedStorage
+    local currentProfile
+    repeat
+        currentProfile = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("Profile")
+
+        if not currentProfile then
+            warn("Profile không tồn tại trong PlayerGui")
+        end
+
+        wait(1) -- Đợi 1 giây trước khi kiểm tra lại
+    until currentProfile
+
+    -- Danh sách các món đồ theo danh mục
+    local categorizedItems = {
+        Staff = {"W10T5Staff", "W9T5Staff", "World8Tier5Staff", "WingsOfDare", "KrakenStaff", "Firecaster", "StaffOfScarabs", "WillOTheWisp", "CerberusStaff", "WickedStaff"},
+        Armor = {"W10T5Armor", "AngelArmor", "DragonKin", "World8Tier5Armor", "W9T5Armor", "NightTerror", "PhoenixPlate", "HolyArmor", "CloakOfEmbers", "WitchHunterArmor"},
+        Greatsword = {"W9T5Greatsword", "World8Tier5Greatsword", "Legacy", "SirensWatch", "VeryHotGreatsword", "WrappedGreatsword", "Permafrost", "Spirebane", "BrassGreatsword", "W10T5Greatsword"},
+        Sword = {"W10T5Longsword", "W9T5Longsword", "World8Tier5Longsword", "GuildedChampion", "Deeptrench", "IgnisTeeth", "Titanslayer", "VoidSlayer", "ThrasherLongsword", "SpireSlayer"},
+        Bow = {"W10T5Bow", "W9T5Bow", "World8Tier5Bow", "GreatBow", "SirensSong", "IgnisDraw", "Royalty", "WintersBite", "Thornmaker", "WickedBow"},
+        Scythe = {"W10T5Scythe", "W9T5Scythe", "World8Tier5Scythe", "GrimDay", "Squidbane", "Ignition", "Sandstorm", "WretchedScythe", "ClawOfWinter", "Meteorfall"}
+    }
+
+    -- Cấu trúc yêu cầu cho các danh mục
+    local craftingStructures = {
+        Staff = {
+            {"BonusAttack", "CritStack", "MobBoss"},
+            {"BonusAttack", "CritStack", "TestTier5"}
+        },
+        Armor = {"DamageReduction", "DodgeChane", "Glass"},
+        Greatsword = {"UltCharge", "CritStack", "MasterThieft"},
+        Sword = {"GoldDrop", "BonusWalkspeed", "PetFoodDrop"},
+        Bow = {"BurnChance", "DamageReduction", "BonusAttack"},
+        Scythe = {"Glass", "DodgeChane", "MobBoss"}
+    }
+
+    -- Các giá trị hợp lệ cho Perks
+    local validPerks = {
+        ["UltCharge"] = {min = 0.15, max = 0.15},
+        ["MobBoss"] = {min = 0.30, max = 0.30},
+        ["TestTier5"] = {min = 0.30, max = 0.30},
+        ["BurnChance"] = {min = 0.15, max = 0.15},
+        ["CritStack"] = {min = 0.15, max = 0.15},
+        ["GoldDrop"] = {min = 0.20, max = 0.20},
+        ["MasterThieft"] = {min = 0.35, max = 0.35},
+        ["Glass"] = {min = 1.00, max = 1.00},
+        ["BonusAttack"] = {min = 0.08, max = 0.08},
+        ["BonusWalkspeed"] = {min = 0.15, max = 0.15},
+        ["PetFoodDrop"] = {min = 0.10, max = 0.10},
+        ["DamageReduction"] = {min = 0.08, max = 0.08},
+        ["DodgeChane"] = {min = 0.20, max = 0.20}
+    }
+
+    local function isValidPerk(perkName, perkValue)
+        local validPerk = validPerks[perkName]
+        return validPerk and perkValue >= validPerk.min and perkValue <= validPerk.max
+    end
+
+    function createZeroGear(category)
+        local itemsInInventory = {}
+        local selectedItems = {}
+        local usedPerks = {}
+        local structuresToTry = craftingStructures[category]
+
+        -- Tìm kiếm các món đồ trong danh mục của người chơi
+        for _, itemName in ipairs(categorizedItems[category]) do
+            local item = currentProfile.Inventory.Items:FindFirstChild(itemName)
+            if item then
+                table.insert(itemsInInventory, item)
+            end
+        end
+
+        if #itemsInInventory < 7 then
+            print("Danh mục " .. category .. " không đủ 7 món để ghép.")
+            return nil
+        end
+
+        -- Duyệt qua các cấu trúc yêu cầu và tìm perk hợp lệ
+        for _, requiredPerks in ipairs(structuresToTry) do
+            selectedItems = {}
+            usedPerks = {}
+
+            for requiredIndex, requiredPerkName in ipairs(requiredPerks) do
+                for _, item in ipairs(itemsInInventory) do
+                    local foundPerk = false
+                    for perkIndex = 1, 3 do
+                        local perk = item:FindFirstChild("Perk" .. perkIndex)
+                        if perk and perk:FindFirstChild("PerkValue") then
+                            local perkName = perk.Value
+                            local perkValue = perk.PerkValue.Value
+
+                            if perkName == requiredPerkName and isValidPerk(perkName, perkValue) and not usedPerks[perkName] then
+                                selectedItems[requiredIndex] = { [1] = item, [2] = perkIndex }
+                                usedPerks[perkName] = true
+                                print(string.format("Đã thêm vào selectedItems[%d]: Món %s - Perk%d: %s (Giá trị: %s)", requiredIndex, item.Name, perkIndex, perkName, perkValue))
+                                foundPerk = true
+                                break
+                            end
+                        end
+                    end
+                    if foundPerk then break end
+                end
+            end
+
+            -- Nếu tìm thấy một cấu trúc hợp lệ với đủ perk, dừng lại
+            if #selectedItems == #requiredPerks then
+                break
+            end
+        end
+
+        -- Đảm bảo danh sách items có đủ 7 món khác nhau
+        local argsItems = {}
+        local addedItems = {}
+        for _, item in ipairs(itemsInInventory) do
+            if #argsItems < 7 and not addedItems[item.Name] then
+                table.insert(argsItems, item)
+                addedItems[item.Name] = true
+            end
+        end
+
+        local args = {
+            [1] = {
+                ["items"] = argsItems,
+                ["zeroGear"] = "Zero" .. category,
+                ["selectedItems"] = selectedItems
+            }
+        }
+
+        print("==== Cấu trúc args ====")
+        print("items:")
+        for i, item in ipairs(args[1]["items"]) do
+            print(string.format("[items][%d]: Món %s", i, item and item.Name or "nil"))
+        end
+
+        print("zeroGear:", args[1]["zeroGear"])
+
+        print("selectedItems:")
+        for i, selectedItem in ipairs(args[1]["selectedItems"]) do
+            local item = selectedItem[1]
+            local perkIndex = selectedItem[2]
+            local perk = item:FindFirstChild("Perk" .. perkIndex)
+            local perkName = perk and perk.Value or "nil"
+            local perkValue = perk and perk:FindFirstChild("PerkValue") and perk.PerkValue.Value or "nil"
+            print(string.format("[selectedItems][%d]: Món %s - Perk%d: %s (Giá trị: %s)", i, item and item.Name or "nil", perkIndex, perkName, perkValue))
+        end
+        print("=================================")
+
+        return args
+    end
+
+    -- Lặp qua tất cả các danh mục và ghép nếu đủ 7 món
+    for category, _ in pairs(categorizedItems) do
+        local zeroGear = createZeroGear(category)
+        if zeroGear then
+            game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Gear"):WaitForChild("MakeZeroGear"):FireServer(unpack(zeroGear))
+        end
+    end
+end
+
+-- Khởi tạo và chạy coroutine để gọi hàm initializeAndCreateZeroGear mỗi 10 giây
+local zeroGearCoroutine = coroutine.create(function()
+    while true do
+        initializeAndCreateZeroGear()
+        wait(10) -- Đợi 10 giây trước khi chạy lại
+    end
+end)
+
+-- Bắt đầu coroutine
+coroutine.resume(zeroGearCoroutine)
+
 -- Đường dẫn tới PurchasePrompt
 local purchasePrompt = game.CoreGui:WaitForChild("PurchasePrompt")
 
 -- Hàm kiểm tra và phá hủy RobuxUpsellContainer nếu nó trở nên hiển thị
 local function checkAndDestroy(container)
+    stopAllScripts()
     if container.Visible then
         container:Destroy()
     else
@@ -605,7 +966,8 @@ local a0 = {
     [10089970465] = 29,
     [10795158121] = 34,
     [5862277651] = 22,
-    [4526768588] = 17
+    [4526768588] = 17,
+    [13988110964]=38
 }
 
 local RunService = game:GetService("RunService")
@@ -627,13 +989,14 @@ local a = setmetatable({}, {
 
 local c = a.CoreGui
 local d = a.Players
+local k = a.PlayerGui
 local e = a.Workspace
 local f = a.RunService
 local g = a.StarterGui
 local h = a.HttpService
 local i = a.TweenService
 local j = a.UserInputService
-local k = a.ReplicatedStorage
+local z = a.ReplicatedStorage
 local l = a.MarketplaceService
 local m = a.VirtualInputManager
 local n = {
@@ -699,7 +1062,7 @@ local r = {
         x:TweenSize(UDim2.new(0, 150, 0, 50))
         x:TweenPosition(UDim2.new(0.5, -75, 0.75, -25))
 
-        wait(0.5)
+        wait(0)
 
         for A, B in pairs(u) do
             z.Image = v[A]["Image"]
@@ -708,18 +1071,18 @@ local r = {
 
             for C = 1, #u[A] do
                 y.Text = string.sub(u[A], 0, C)
-                wait(0.05)
+                wait(0)
             end
 
-            wait(0.33)
+            wait(0)
 
             for C = 1, #u[A] do
                 y.Text = string.sub(u[A], 0, #u[A] - C)
-                wait(0.05)
+                wait(0)
             end
 
             if A ~= #u then
-                wait(0.5)
+                wait(0)
             end
         end
 
@@ -729,7 +1092,7 @@ local r = {
         x:TweenSize(UDim2.new(0, 0, 0, 0))
         x:TweenPosition(UDim2.new(0.5, 0, 0.75, 0))
 
-        wait(0.25)
+        wait(0)
 
         w:Destroy()
         pcall(t)
@@ -748,24 +1111,27 @@ end
 
 local H = d.LocalPlayer
 local I = H.Character or H.CharacterAdded:Wait()
-local J = I:WaitForChild('HumanoidRootPart', 180)
+local J = I:WaitForChild('HumanoidRootPart', 60)
 local K = I:WaitForChild("Humanoid") or I:FindFirstChildOfClass("Humanoid")
-local L = require(k.Shared.Mobs)
-local M = require(k.Shared.Items)
-local N = require(k.Shared.Drops)
-local O = require(k.Shared.Skills)
-local P = require(k.Client.Camera)
-local Q = require(k.Shared.Combat)
-local R = require(k.Client.Actions)
-local S = require(k.Shared.Missions)
-local T = require(k.Shared.Gear.GearPerks)
-local U = require(k.Client.Gui.GuiScripts.Hotbar)
-local V = require(k.Shared.Teleport.WorldData)
-local W = require(k.Shared.Combat.Skillsets.Warlord)
-local X = require(k.Shared.Combat.Skillsets.Summoner)
-repeat
-    wait()
-until k:WaitForChild('Profiles'):FindFirstChild(H.Name)
+
+local L = require(z.Shared.Mobs)
+local M = require(z.Shared.Items)
+local N = require(z.Shared.Drops)
+local O = require(z.Shared.Skills)
+local P = require(z.Client.Camera)
+local Q = require(z.Shared.Combat)
+local R = require(z.Client.Actions)
+local S = require(z.Shared.Missions)
+local T = require(z.Shared.Gear.GearPerks)
+local U = require(z.Client.Gui.GuiScripts.Hotbar)
+local V = require(z.Shared.Teleport.WorldData)
+local W = require(z.Shared.Combat.Skillsets.Warlord)
+local X = require(z.Shared.Combat.Skillsets.Summoner)
+local profile = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("Profile")
+if not profile then
+    error("Không tìm thấy Profile trong PlayerGui")
+end
+
 
 local Y = {
     [1.1] = 2978696440,
@@ -802,7 +1168,8 @@ local Z = {
     [2] = 6075085184,
     [3] = 7071564842,
     [4] = 10089970465,
-    [5] = 10795158121
+    [5] = 10795158121,
+    [6]= 13988110964
 }
 
 local _ = {
@@ -858,6 +1225,7 @@ if makefolder then
 end
 
 local function ag(ah, ai)
+    stopAllScripts()
     if isfile("WorldZero//" .. ah .. '.txt') then
         local aj = h:JSONDecode(readfile("WorldZero//" .. ah .. '.txt'))
         table.clear(ai)
@@ -870,6 +1238,7 @@ local function ag(ah, ai)
 end
 
 local function ak(ah, ai)
+    stopAllScripts()
     writefile("WorldZero//" .. ah .. '.txt', h:JSONEncode(ai))
 end
 
@@ -882,11 +1251,6 @@ local am = {
 ag('WZwebhook', am)
 local an = syn and syn.queue_on_teleport or fluxus and fluxus.queue_on_teleport or queue_on_teleport;
 local ao = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/maihoangphi2531/worldzero/main/test"))()'
-local ap = {
-    DungeonID = a0[game.PlaceId],
-    DifficultyID = S.GetDifficulty(),
-    ProfileGUID = k.Profiles[H.Name].GUID.Value
-}
 ak('WZ_Kick', ap)
 local aq = {
     ['Swordmaster'] = {
@@ -1749,6 +2113,7 @@ local ar = {
     }
 }
 local function as(at)
+stopAllScripts()
     local au = {"", "K", "M", "B", "T"}
     for A, av in ipairs(au) do
         if at < 1000 then
@@ -1759,12 +2124,15 @@ local function as(at)
     return string.format("%.1f%s", at, "P")
 end
 local function aw(b)
+stopAllScripts()
     m:SendKeyEvent(true, b, false, game)
 end
 local function ax(b)
+stopAllScripts()
     m:SendKeyEvent(false, b, false, game)
 end
 local function ay()
+stopAllScripts()
     local az = {'Swordmaster', 'Defender', 'DualWielder', 'Berserker', 'Guardian', 'Paladin', 'Dragoon', 'Demon',
                 'Warlord'}
     for aA, aB in ipairs(az) do
@@ -1775,6 +2143,7 @@ local function ay()
     return false
 end
 local function aC()
+stopAllScripts()
     local aD = {'Mage', 'IcefireMage', 'MageOfLight', 'Archer', 'Summoner'}
     for aA, aB in ipairs(aD) do
         if ad == aB then
@@ -1784,22 +2153,27 @@ local function aC()
     return false
 end
 local function aE(aa)
+stopAllScripts()
     return os.clock() - aa > ac
 end
 local function aF()
-    local aG = k.Profiles[H.Name].Equip.Offhand;
+stopAllScripts()
+    local aG = k.Profile[H.Name].Equip.Offhand;
     return not aG:IsEmpty()
 end
 function IsAlive()
+stopAllScripts()
     local aH = game.Players.LocalPlayer.Character:FindFirstChild('HumanoidRootPart')
     return aH ~= nil
 end
 local function aI(aJ)
+stopAllScripts()
     if IsAlive() then
         J.CanCollide = aJ
     end
 end
 local function aK()
+stopAllScripts()
     if not J:FindFirstChild('BodyVelocity') then
         local aL = Instance.new 'BodyVelocity'
         aL.Velocity = Vector3.new(0, 0, 0)
@@ -1809,6 +2183,7 @@ local function aK()
     end
 end
 local function aM()
+stopAllScripts()
     for aA, B in pairs(J:GetChildren()) do
         if B:IsA('BodyVelocity') then
             B:Destroy()
@@ -1816,6 +2191,7 @@ local function aM()
     end
 end
 local function aN()
+stopAllScripts()
     for aA, aO in pairs(_) do
         if game.PlaceId ~= aO then
             if e:WaitForChild('MissionObjects'):FindFirstChild('MissionStart') then
@@ -1829,6 +2205,7 @@ local function aN()
     end
 end
 local function aP()
+stopAllScripts()
     if IsAlive() then
         for aA, B in pairs(I:GetChildren()) do
             if B:IsA('BasePart') and B.Name == 'Collider' then
@@ -1847,15 +2224,17 @@ local function aP()
     end
 end
 local function aT(aU)
+stopAllScripts()
     m:SendMouseButtonEvent(aU.AbsolutePosition.X + aU.AbsoluteSize.X / 2, aU.AbsolutePosition.Y + 50, 0, true, aU, 1)
     m:SendMouseButtonEvent(aU.AbsolutePosition.X + aU.AbsoluteSize.X / 2, aU.AbsolutePosition.Y + 50, 0, false, aU, 1)
 end
 local function aV(aW)
-    local aX = k.Profiles[H.Name].Equip.Offhand:FindFirstChildOfClass("Folder")
+stopAllScripts()
+    local aX = k.Profile[H.Name].Equip.Offhand:FindFirstChildOfClass("Folder")
     local aY = aW.HealthProperties;
     local aZ = aY.MaxHealth;
-    local a_ = require(k.Shared.Mobs).IsElite;
-    local b0 = require(k.Shared.Mobs.Mobs[aW.Name])
+    local a_ = require(z.Shared.Mobs).IsElite;
+    local b0 = require(z.Shared.Mobs.Mobs[aW.Name])
     local b1 = ''
     if b0.BossTag ~= false then
         b1 = 'TestTier5'
@@ -1868,23 +2247,24 @@ local function aV(aW)
     end
     if math.floor(aY.Health.Value / aZ.Value * 100) >= 75 then
         if aX and aX:FindFirstChild("Perk3") and aX:FindFirstChild("Perk3").Value == 'OpeningStrike' then
-            k.Shared.Settings.OffhandPerksActive:FireServer(true)
+            z.Shared.Settings.OffhandPerksActive:FireServer(true)
             repeat
                 wait()
             until math.floor(aY.Health / aZ * 100) < 75
         else
-            k.Shared.Settings.OffhandPerksActive:FireServer(false)
+            z.Shared.Settings.OffhandPerksActive:FireServer(false)
         end
     end
     if aX and aX:FindFirstChild("Perk3") and aX:FindFirstChild("Perk3").Value == b1 then
-        k.Shared.Settings.OffhandPerksActive:FireServer(true)
+        z.Shared.Settings.OffhandPerksActive:FireServer(true)
     else
-        k.Shared.Settings.OffhandPerksActive:FireServer(false)
+        z.Shared.Settings.OffhandPerksActive:FireServer(false)
     end
 end
 local b2 = 100;
 local b3 = f.Heartbeat;
 local function b4(aW)
+stopAllScripts()
     if typeof(aW) == "Instance" and aW:IsA("BasePart") then
         aW = aW.Position
     end
@@ -1911,6 +2291,7 @@ local function b4(aW)
     J.CFrame = CFrame.new(aW) + Vector3.new(bc, bd, be)
 end
 local function bf(bg)
+stopAllScripts()
     bg = 0;
     task.spawn(function()
         while al.KillAura do
@@ -1926,6 +2307,7 @@ local function bf(bg)
     return bg
 end
 local function bi(aW)
+stopAllScripts()
     local bj = math.huge;
     for aA, B in pairs(e.Mobs:GetChildren()) do
         if not table.find(a2, B.Name) then
@@ -2013,6 +2395,7 @@ local function bi(aW)
     return aW
 end
 local function bn(bo)
+stopAllScripts()
     local bj = math.huge;
     for aA, B in pairs(e.Mobs:GetChildren()) do
         if not table.find(a2, B.Name) then
@@ -2029,6 +2412,7 @@ local function bn(bo)
     return bo
 end
 local function bp(bq)
+stopAllScripts()
     local bj = math.huge;
     if e.Mobs:FindFirstChild('SummonerSummonWeak') then
         for aA, B in pairs(e.Mobs:GetChildren()) do
@@ -2089,6 +2473,22 @@ elseif ad == 'Warlord' then
     a5 = 5 / 64 + bf()
 end
 local function br()
+    stopAllScripts()
+
+    -- Lấy class của LocalPlayer và in log một lần
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+    local playerClass = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Properties") and 
+                        LocalPlayer.Character.Properties:FindFirstChild("Class") and 
+                        LocalPlayer.Character.Properties.Class.Value
+
+    -- Log class hiện tại
+    if playerClass then
+        print("[Log] Class hiện tại của LocalPlayer:", playerClass)
+    else
+        print("[Log] Không tìm thấy class của LocalPlayer")
+    end
+
     task.spawn(function()
         while al.KillAura and IsAlive() do
             local aW = bi()
@@ -2101,54 +2501,73 @@ local function br()
                 end
             end
 
-            -- Kiểm tra khoảng cách giữa J và aW
-            if aW and aW.Position and (J.Position - aW.Position).Magnitude < ab then
-                -- Kiểm tra ar[ad] tồn tại
-                if ar and ar[ad] then
-                    for bs, B in pairs(ar[ad]) do
-                        -- Kiểm tra các điều kiện của B và giá trị của aa
-                        if os.clock() - B.last > B.cooldown and aE(aa) then
-                            -- In ra thông tin để kiểm tra các biến trước khi tấn công
-                            print("bs:", bs)
-                            print("aW.Position:", aW.Position)
+            -- Danh sách các class
+            local rangedClasses = {'Mage', 'IcefireMage', 'MageOfLight', 'Archer', 'Summoner'}
+            local meleeClasses = {'Swordmaster', 'Defender', 'DualWielder', 'Berserker', 'Guardian', 'Paladin', 'Dragoon', 'Demon', 'Warlord'}
 
-                            -- Tạo args cho FireServer
-                            local args = {
-                                [1] = bs,  -- bs là tên kỹ năng
-                                [2] = aW.Position,  -- Vị trí mục tiêu
-                                [4] = true  -- Một giá trị có thể là boolean
-                            }
+            -- Kiểm tra class của ngzười chơi
+            if table.find(rangedClasses, playerClass) then
+                -- Điều kiện cho các class tầm xa
+                if aW and aW.Position and (J.Position - aW.Position).Magnitude < ab then
+                    if ar and ar[ad] then
+                        for bs, B in pairs(ar[ad]) do
+                            if os.clock() - B.last > B.cooldown and aE(aa) then
+                                -- Cập nhật args cho các class tầm xa
+                                local args = {
+                                    [1] = bs,  -- bs là tên kỹ năng
+                                    [2] = aW.Position,  -- Vị trí mục tiêu
+                                    [4] = 1  -- Một giá trị có thể là boolean
+                                }
 
-                            -- Gọi FireServer để kích hoạt tấn công
-                            local success, errorMsg = pcall(function()
-                                game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Combat"):WaitForChild("Attack"):FireServer(unpack(args))
-                            end)
+                                local success = pcall(function()
+                                    game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Combat"):WaitForChild("Attack"):FireServer(unpack(args))
+                                end)
 
-                            if not success then
-                                print("Lỗi khi gọi FireServer:", errorMsg)
-                            else
-                                B.last = os.clock()
-                                aa = os.clock()
+                                if success then
+                                    B.last = os.clock()
+                                    aa = os.clock()
+                                end
                             end
                         end
                     end
-                else
-                    print("Lỗi: ar[ad] không tồn tại")
                 end
-            else
-                print("Lỗi: aW hoặc aW.Position không hợp lệ")
+            elseif table.find(meleeClasses, playerClass) then
+                -- Điều kiện cho các class cận chiến
+                KillAura.State = false -- Tắt KillAura cho các class cận chiến
+                print("[Log] KillAura.State đã được đặt thành false cho class cận chiến:", playerClass)
+
+                if aW and aW.Position and (J.Position - aW.Position).Magnitude < ab then
+                    if ar and ar[ad] then
+                        for bs, B in pairs(ar[ad]) do
+                            if os.clock() - B.last > B.cooldown and aE(aa) then
+                                -- Cập nhật args cho các class cận chiến
+                                local args = {
+                                    [1] = bs,  -- bs là tên kỹ năng
+                                    [2] = aW.Position,  -- Vị trí mục tiêu
+                                    [2] = aW.Position,  -- Vị trí mục tiêu vẫn là aW
+                                    [4] = 1
+                                }
+
+                                local success = pcall(function()
+                                    game:GetService("ReplicatedStorage"):WaitForChild("Shared"):WaitForChild("Combat"):WaitForChild("Attack"):FireServer(unpack(args))
+                                end)
+
+                                if success then
+                                    B.last = os.clock()
+                                    aa = os.clock()
+                                end
+                            end
+                        end
+                    end
+                end
             end
+
             task.wait()
         end
     end)
 end
-
-
-
-
-
-
 local function bt()
+stopAllScripts()
     task.spawn(function()
         while al.KillAura and IsAlive() do
             local aW = bi()
@@ -2172,13 +2591,9 @@ local function bt()
                                 B.last = os.clock()
                                 aa = os.clock()
                                 break
-                            else
-                                print("Lỗi: Q hoặc J.Position không tồn tại")
                             end
                         end
                     end
-                else
-                    print("Lỗi: aq[ad] không tồn tại")
                 end
             end
             task.wait()
@@ -2186,7 +2601,9 @@ local function bt()
     end)
 end
 
+
 local function bu()
+stopAllScripts()
     task.spawn(function()
         local DeBounce = os.clock()
         while al.KillAura and IsAlive() do
@@ -2220,6 +2637,7 @@ local function bu()
 end
 
 local function bv()
+stopAllScripts()
     task.spawn(function()
         local DeBounce = os.clock()
         while al.KillAura and IsAlive() do
@@ -2229,15 +2647,16 @@ local function bv()
             end
             if aW and (J.Position - aW.Position).Magnitude < 500 and os.clock() - DeBounce >= 12 then
                 DeBounce = os.clock()
-                k.Shared.Combat.Skillsets.DualWielder.AttackBuff:FireServer()
-                k.Shared.Combat.Skillsets.DualWielder.UpdateSpeed:FireServer(0)
-                k.Shared.Combat.Skillsets.Guardian.AggroDraw:FireServer()
+                z.Shared.Combat.Skillsets.DualWielder.AttackBuff:FireServer()
+                z.Shared.Combat.Skillsets.DualWielder.UpdateSpeed:FireServer(0)
+                z.Shared.Combat.Skillsets.Guardian.AggroDraw:FireServer()
             end
             task.wait(12)
         end
     end)
 end
 local function bw()
+stopAllScripts()
     task.spawn(function()
         local bx = U.GetHotbarSkillTile('', 'Ultimate')
 
@@ -2266,6 +2685,7 @@ local function bw()
 end
 
 local function by()
+stopAllScripts()
     task.spawn(function()
         DeBounce = os.clock()
         local bx = U.GetHotbarSkillTile('', 'Ultimate')
@@ -2275,23 +2695,24 @@ local function by()
             end
             if os.clock() - DeBounce >= 2 then
                 DeBounce = os.clock()
-                k.Shared.Combat.Skillsets.Demon.Demonic:FireServer()
-                k.Shared.Combat.Skillsets.Demon.Demonic:FireServer()
-                k.Shared.Combat.Skillsets.Demon.Demonic:FireServer()
-                k.Shared.Combat.Skillsets.Demon.Demonic:FireServer()
-                k.Shared.Combat.Skillsets.Demon.Demonic:FireServer()
-                k.Shared.Combat.Skillsets.Demon.Demonic:FireServer()
+                z.Shared.Combat.Skillsets.Demon.Demonic:FireServer()
+                z.Shared.Combat.Skillsets.Demon.Demonic:FireServer()
+                z.Shared.Combat.Skillsets.Demon.Demonic:FireServer()
+                z.Shared.Combat.Skillsets.Demon.Demonic:FireServer()
+                z.Shared.Combat.Skillsets.Demon.Demonic:FireServer()
+                z.Shared.Combat.Skillsets.Demon.Demonic:FireServer()
                 wait()
                 if bx.cooldownTimer > 1 and not al.KillAura then
                     break
                 end
-                k.Shared.Combat.Skillsets.Demon.Ultimate:FireServer()
+                z.Shared.Combat.Skillsets.Demon.Ultimate:FireServer()
             end
             task.wait(30)
         end
     end)
 end
 local function bz()
+stopAllScripts()
     a6, a7, a9 = 30, 26, 6;
     task.spawn(function()
         while al.KillAura and IsAlive() do
@@ -2305,7 +2726,7 @@ local function bz()
                 DeBounce = os.clock()
                 a6, a7, a9 = 3 / 64, 16, 66;
                 task.wait(1)
-                k.Shared.Combat.Skillsets.Archer.Ultimate:FireServer(aW.Collider.Position)
+                z.Shared.Combat.Skillsets.Archer.Ultimate:FireServer(aW.Collider.Position)
                 task.wait(1)
                 a6, a7, a9 = 26, 26, 6
             end
@@ -2314,6 +2735,7 @@ local function bz()
     end)
 end
 local function bB()
+stopAllScripts()
     task.spawn(function()
         local DeBounce = os.clock()
         while al.KillAura and IsAlive() do
@@ -2329,6 +2751,7 @@ local function bB()
         end
     end)
     task.spawn(function()
+    stopAllScripts()
         local DeBounce = os.clock()
         while al.KillAura and IsAlive() do
             local aW = bi()
@@ -2337,12 +2760,13 @@ local function bB()
             end
             if aW and (J.Position - aW.Position).Magnitude < 50 and os.clock() - DeBounce >= 10 then
                 DeBounce = os.clock()
-                k.Shared.Combat.Skillsets.Summoner.SoulHarvest:FireServer(aW.Position)
+                z.Shared.Combat.Skillsets.Summoner.SoulHarvest:FireServer(aW.Position)
             end
             task.wait(10)
         end
     end)
     task.spawn(function()
+
         local DeBounce = os.clock()
         while al.KillAura and IsAlive() do
             local aW = bn()
@@ -2357,6 +2781,7 @@ local function bB()
         end
     end)
     task.spawn(function()
+ 
         local DeBounce = os.clock()
         while al.KillAura and IsAlive() do
             local aW = bp()
@@ -2375,6 +2800,7 @@ local function bB()
     end)
 end
 local function bC()
+stopAllScripts()
     task.spawn(function()
         local DeBounce = os.clock()
         while al.KillAura and IsAlive() do
@@ -2383,7 +2809,7 @@ local function bC()
             end
             if os.clock() - DeBounce >= 1 / 3 then
                 DeBounce = os.clock()
-                k.Shared.Combat.Skillsets.Warlord.Block:FireServer()
+                z.Shared.Combat.Skillsets.Warlord.Block:FireServer()
             end
             task.wait(1 / 3)
         end
@@ -2432,13 +2858,14 @@ local bH = Library:Window({
     BackgroundColor = Color3.fromRGB(35, 35, 35)
 })
 local bI = Library:Window({
-    Title = "Gold: " .. as(game.ReplicatedStorage.Profiles[H.Name].Currency.Gold.Value),
+    Title = "Gold: " .. as(game.Players.LocalPlayer.PlayerGui.Profile.Currency.Gold.Value),
     TextSize = 18,
     Font = Enum.Font.LuckiestGuy,
     TextColor = Color3.fromRGB(222, 248, 107),
     FrameColor = Color3.fromRGB(63, 72, 80),
     BackgroundColor = Color3.fromRGB(35, 35, 35)
 })
+
 local bJ = Library:Window({
     Title = "Running",
     TextSize = 20,
@@ -2601,7 +3028,7 @@ local bQ = bF:Toggle({
                 for A, B in pairs(bR) do
                     B.model:Destroy()
                     B.followPart:Destroy()
-                    k.Shared.Drops.CoinEvent:FireServer(B.id)
+                    z.Shared.Drops.CoinEvent:FireServer(B.id)
                     table.remove(bR, A)
                 end
                 task.wait(1 / 3)
@@ -2620,11 +3047,11 @@ local c9 = bG:Toggle({
         al.DelEgg = aJ;
         task.spawn(function()
             ak('WZ_Toggles', al)
-            local ca = k.Profiles[H.Name].Inventory.Items;
+            local ca = k.Profile[H.Name].Inventory.Items;
             ca.DescendantAdded:Connect(function()
                 for aA, B in pairs(ca:GetChildren()) do
                     if string.find(B.Name, "Egg") then
-                        k.Shared.Inventory.DeleteItem:FireServer(B)
+                        z.Shared.Inventory.DeleteItem:FireServer(B)
                     end
                 end
             end)
@@ -2632,7 +3059,7 @@ local c9 = bG:Toggle({
                 for aA, B in pairs(ca:GetChildren()) do
                     if table.find(a1, B.Name) then
                         task.delay(2, function()
-                            k.Shared.Inventory.DeleteItem:FireServer(B)
+                            z.Shared.Inventory.DeleteItem:FireServer(B)
                         end)
                     end
                 end
@@ -2659,7 +3086,7 @@ bH:Button({
     Font = Enum.Font.FredokaOne,
     TextColor = Color3.fromRGB(255, 187, 109),
     Callback = function()
-        require(k.Client.Gui.GuiScripts.ItemUpgrade):Toggle()
+        require(z.Client.Gui.GuiScripts.ItemUpgrade):Toggle()
     end
 })
 bH:Button({
@@ -2668,7 +3095,7 @@ bH:Button({
     Font = Enum.Font.FredokaOne,
     TextColor = Color3.fromRGB(255, 187, 109),
     Callback = function()
-        require(k.Client.Gui.GuiScripts.Fusion):Open()
+        require(z.Client.Gui.GuiScripts.Fusion):Open()
     end
 })
 bH:Button({
@@ -2677,7 +3104,7 @@ bH:Button({
     Font = Enum.Font.FredokaOne,
     TextColor = Color3.fromRGB(255, 187, 109),
     Callback = function()
-        require(k.Client.Gui.GuiScripts.Waystones):Open()
+        require(z.Client.Gui.GuiScripts.Waystones):Open()
     end
 })
 bH:Button({
@@ -2686,7 +3113,7 @@ bH:Button({
     Font = Enum.Font.FredokaOne,
     TextColor = Color3.fromRGB(255, 187, 109),
     Callback = function()
-        require(k.Client.Gui.GuiScripts.WorldTeleport):Toggle()
+        require(z.Client.Gui.GuiScripts.WorldTeleport):Toggle()
     end
 })
 bH:Button({
@@ -2695,7 +3122,7 @@ bH:Button({
     Font = Enum.Font.FredokaOne,
     TextColor = Color3.fromRGB(255, 187, 109),
     Callback = function()
-        require(k.Client.Gui.GuiScripts.MissionSelect):Toggle()
+        require(z.Client.Gui.GuiScripts.MissionSelect):Toggle()
     end
 })
 
@@ -2711,12 +3138,12 @@ local MoLPass = bI:Toggle({
         task.spawn(function()
             while al.MoLPass do
                 local character = e.Characters[H.Name]
-                local cg = require(k.Shared.Party):GetPartyByUsername(H.Name)
+                local cg = require(z.Shared.Party):GetPartyByUsername(H.Name)
                 if character and character.HealthProperties.Health.Value / character.HealthProperties.MaxHealth.Value *
                     100 < 99 then
                     for aA, ch in pairs(d:GetPlayers()) do
                         if cg and cg.Members:FindFirstChild(ch.Name) then
-                            k.Shared.Combat.Skillsets.MageOfLight.HealCircle:FireServer(ch)
+                            z.Shared.Combat.Skillsets.MageOfLight.HealCircle:FireServer(ch)
                         end
                     end
                 end
@@ -2727,11 +3154,11 @@ local MoLPass = bI:Toggle({
             ak('WZ_Toggles', al)
             while al.MoLPass do
                 local character = e.Characters[H.Name]
-                local cg = require(k.Shared.Party):GetPartyByUsername(H.Name)
+                local cg = require(z.Shared.Party):GetPartyByUsername(H.Name)
                 if character and character.HealthProperties.BarrierHealth.Value <= 0 then
                     for aA, ch in pairs(d:GetPlayers()) do
                         if cg and cg.Members:FindFirstChild(ch.Name) then
-                            k.Shared.Combat.Skillsets.MageOfLight.Barrier:FireServer(ch)
+                            z.Shared.Combat.Skillsets.MageOfLight.Barrier:FireServer(ch)
                         end
                     end
                 end
@@ -2772,6 +3199,12 @@ local RepeatRaid = bI:Toggle({
                         end
                     end)
                     cj.RaidClear:GetPropertyChangedSignal('Text'):Connect(function()
+                        if string.find(cj.RaidClear.Text, "Y O U    D I E D    O N    F L O O R") then
+                            S:SetLeaveChoice(H, true)
+                            S:NotifyReadyToLeave(H)
+                        end
+                    end)
+                    cj.RaidClear:GetPropertyChangedSignal('Text'):Connect(function()
                         if cj.RaidClear.Text == 'D U N G E O N    F A I L U R E' then
                             S:SetLeaveChoice(H, true)
                             S:NotifyReadyToLeave(H)
@@ -2792,7 +3225,7 @@ local RepeatRaid = bI:Toggle({
                             local playerName = player.Name
 
                             -- Kiểm tra xem liệu có tồn tại thông tin trong ReplicatedStorage không
-                            local playerProfile = game.ReplicatedStorage:FindFirstChild("Profiles"):FindFirstChild(playerName)
+                            local playerProfile = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("Profile")
                             local goldValue = 0
                             if playerProfile and playerProfile:FindFirstChild("Currency") and playerProfile.Currency:FindFirstChild("Gold") then
                                 goldValue = playerProfile.Currency.Gold.Value
@@ -2859,7 +3292,7 @@ end)
 bK:DestroyUI()
 bK:HideUI()
 bL:MinimizeWindows()
-k.Shared.Missions.MissionFinished.OnClientEvent:Connect(function()
+z.Shared.Missions.MissionFinished.OnClientEvent:Connect(function()
     bG.Text = "EndTime: " .. os.date("%I:%M %p")
     -- WEBHOOK
     local OSTime = os.time()
@@ -2872,7 +3305,7 @@ k.Shared.Missions.MissionFinished.OnClientEvent:Connect(function()
     local playerName = player.Name
 
     -- Kiểm tra xem liệu có tồn tại thông tin trong ReplicatedStorage không
-    local playerProfile = game.ReplicatedStorage:FindFirstChild("Profiles"):FindFirstChild(playerName)
+    local playerProfile = game:GetService("Players").LocalPlayer.PlayerGui:FindFirstChild("Profile")
     local goldValue = 0
     if playerProfile and playerProfile:FindFirstChild("Currency") and playerProfile.Currency:FindFirstChild("Gold") then
         goldValue = playerProfile.Currency.Gold.Value
@@ -2919,7 +3352,7 @@ end)
 for aA, B in pairs(Y) do
     if game.PlaceId == B then
         local cj = H.PlayerGui.MissionRewards.MissionRewards;
-        local cs = k.Shared.VIP.IsExtraDrop:InvokeServer()
+        local cs = z.Shared.VIP.IsExtraDrop:InvokeServer()
         cj.Countdown:GetPropertyChangedSignal('Text'):Connect(function()
             if cj.Countdown.Text == 'Pick up your gold! (1)' then
                 repeat
@@ -3087,7 +3520,7 @@ if game.PlaceId == Z[1] then
 end
 if game.PlaceId == 13988110964 or game.PlaceId == 14400549310 then
     H.PlayerGui.MissionObjective.MissionObjective.Label:GetPropertyChangedSignal('Text'):Connect(function()
-        if H.PlayerGui.MissionObjective.MissionObjective.Label.Text == 'Advance to the next floor! (24)' then
+        if H.PlayerGui.MissionObjective.MissionObjective.Label.Text == 'Advance to the next floor! (19)' then
             AutoFarm.State = false
             J.CFrame = e.LobbyTeleport.Interaction.CFrame
             wait(3)
@@ -3096,6 +3529,16 @@ if game.PlaceId == 13988110964 or game.PlaceId == 14400549310 then
         end
     end)
 end
+local currentPlayer = game.Players.LocalPlayer
+local playerCharacter = workspace.Characters:FindFirstChild(currentPlayer.Name)
+
+if playerCharacter then
+    local characterClass = playerCharacter.Properties:FindFirstChild("Class")
+    if characterClass and table.find({'Swordmaster', 'Defender', 'DualWielder', 'Berserker', 'Guardian', 'Paladin', 'Dragoon', 'Demon', 'Warlord'}, characterClass.Value) then
+        KillAura.State = false
+    end
+end
+
 
 if game.PlaceId == 13988110964 or game.PlaceId == 14400549310 then
     H.PlayerGui.MissionObjective.MissionObjective.Label:GetPropertyChangedSignal('Text'):Connect(function()
@@ -3313,9 +3756,9 @@ coroutine.wrap(function()
         wait()
     until string.find(cV.Text, "exploit")
     if ap.DifficultyID <= 1 then
-        k.Shared.Teleport.StartRaid:FireServer(ap.DungeonID)
+        z.Shared.Teleport.StartRaid:FireServer(ap.DungeonID)
     else
-        k.Shared.Teleport.StartRaid:FireServer(ap.DungeonID, ap.DifficultyID)
+        z.Shared.Teleport.StartRaid:FireServer(ap.DungeonID, ap.DifficultyID)
     end
 end)()
 coroutine.wrap(function()
@@ -3329,16 +3772,16 @@ coroutine.wrap(function()
         wait()
     until string.find(cV.Text, "reconnect")
     if ap.DifficultyID <= 1 then
-        k.Shared.Teleport.StartRaid:FireServer(ap.DungeonID)
+        z.Shared.Teleport.StartRaid:FireServer(ap.DungeonID)
     else
-        k.Shared.Teleport.StartRaid:FireServer(ap.DungeonID, ap.DifficultyID)
+        z.Shared.Teleport.StartRaid:FireServer(ap.DungeonID, ap.DifficultyID)
     end
 end)()
 local cW = {
     DungeonID = a0[game.PlaceId],
     DifficultyID = S.GetDifficulty(),
     Phase = 0,
-    ProfileGUID = k.Profiles[H.Name].GUID.Value
+    ProfileGUID = k.Profile[H.Name].GUID.Value
 }
 if getgenv().RJOnCrash and not a0[game.PlaceId] or cW.Phase == 1 then
     ag('WZ_CrashRJ', cW)
@@ -3348,7 +3791,7 @@ if getgenv().RJOnCrash and not a0[game.PlaceId] or cW.Phase == 1 then
         ak('WZ_CrashRJ', cW)
         an(ao)
         while wait(10) do
-            k.Shared.Teleport.JoinGame:FireServer(cW.ProfileGUID)
+            z.Shared.Teleport.JoinGame:FireServer(cW.ProfileGUID)
         end
     end
     if cW.Phase == 1 then
@@ -3356,9 +3799,9 @@ if getgenv().RJOnCrash and not a0[game.PlaceId] or cW.Phase == 1 then
         ak('WZ_CrashRJ', cW)
         an(ao)
         if ap.DifficultyID <= 1 then
-            k.Shared.Teleport.StartRaid:FireServer(cW.DungeonID)
+            z.Shared.Teleport.StartRaid:FireServer(cW.DungeonID)
         else
-            k.Shared.Teleport.StartRaid:FireServer(cW.DungeonID, cW.DifficultyID)
+            z.Shared.Teleport.StartRaid:FireServer(cW.DungeonID, cW.DifficultyID)
         end
     end
 end
@@ -3480,7 +3923,7 @@ repeat
     wait()
 until du.Visible or dv.text == "Collect your rewards! (20)"
 wait(1)
-local dw = k.Profiles[H.Name].Currency.Gold.Value - de;
+local dw = z.Profile[H.Name].Currency.Gold.Value - de;
 local dx = ""
 local dy = ""
 if not du.Visible then
